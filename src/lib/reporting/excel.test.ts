@@ -117,6 +117,13 @@ test("the month workbook has the master, the questions, the weeks, Job Data and 
     ["September Master", "For Polkadot", "WE 10 Sep", "WE 17 Sep", "WE 24 Sep", "Job Data", "Rates"]
   );
 
+  // A viewer cannot open Job data or Settings, so their copy leaves both out.
+  const viewer = await load(await monthWorkbook(month, weeks, month.rows, queries, { ...ctx, staff: false }));
+  assert.deepEqual(
+    viewer.worksheets.map((w) => w.name),
+    ["September Master", "For Polkadot", "WE 10 Sep", "WE 17 Sep", "WE 24 Sep"]
+  );
+
   const master = wb.getWorksheet("September Master")!;
   assert.equal(master.getCell("A1").value, "September 2026 Master");
   assert.equal(master.getCell("A5").value, "Contractor");

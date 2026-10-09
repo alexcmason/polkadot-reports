@@ -28,7 +28,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 /** Where to go after a save: the page the form came from, or `fallback`. Only paths inside the app are followed. */
 export const safeReturn = (to: string, fallback: string) =>
-  to.startsWith("/") && !to.includes("//") && !to.includes("\\") ? to : fallback;
+  /^\/(?!\/)[\x21-\x7e]*$/.test(to) && !to.includes("//") && !to.includes("\\") ? to : fallback;
 
 /** Form helpers */
 export function str(form: FormData, name: string): string {

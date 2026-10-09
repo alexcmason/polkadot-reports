@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getUser } from "@/lib/auth";
 import { appOrigin } from "@/lib/url";
 import { IntegrationError } from "@/lib/integrations/http";
-import { saveXero } from "@/lib/integrations/store";
+import { getIntegration, saveXero } from "@/lib/integrations/store";
 import * as xero from "@/lib/integrations/xero";
 import { settingsFor } from "@/lib/reporting/context";
 
@@ -41,9 +41,14 @@ export async function GET(request: Request) {
     const orgs = fromThisSignIn.length ? fromThisSignIn : all;
     if (!orgs.length) return fail("No Xero organisation was chosen. Start again and tick the business's organisation.");
 
-    // Prefer the organisation named like the business. Settings can switch to another one.
+    // Keep the organisation already in use when it was granted again, so reconnecting never
+    // switches organisation. Otherwise prefer one named like the business. Settings can switch.
+    const current = (await getIntegration("xero"))?.tenantId;
     const want = simple((await settingsFor()).businessName);
-    const pick = (want && orgs.find((o) => simple(o.tenantName).startsWith(want))) || orgs[0];
+    const pick =
+      orgs.find((o) => o.tenantId === current) ||
+      (want && (orgs.find((o) => simple(o.tenantName) === want) || orgs.find((o) => simple(o.tenantName).startsWith(want)))) ||
+      orgs[0];
     const tenants = orgs.map((o) => ({ tenantId: o.tenantId, name: o.tenantName }));
     await saveXero(tokens, { tenantId: pick.tenantId, name: pick.tenantName }, tenants, user.id);
     return finish(`${settings}?connected=xero`);

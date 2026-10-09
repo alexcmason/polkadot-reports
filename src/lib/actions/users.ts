@@ -26,7 +26,7 @@ export async function inviteUser(form: FormData) {
   const name = str(form, "name");
   const email = str(form, "email").toLowerCase();
   const role = str(form, "role") as Role;
-  if (!name || !email.includes("@") || !(role in ROLE_LABEL)) redirect(`${PAGE}?error=details`);
+  if (!name || !email.includes("@") || !Object.hasOwn(ROLE_LABEL, role)) redirect(`${PAGE}?error=details`);
   if (await one("select 1 from users where email = $1", [email])) redirect(`${PAGE}?error=exists`);
 
   const user = await one<{ id: string }>("insert into users (name, email, role, status) values ($1, $2, $3, 'invited') returning id", [
@@ -56,7 +56,7 @@ export async function updateUser(form: FormData) {
 
   const name = str(form, "name");
   let role = str(form, "role") as Role;
-  if (!name || !(role in ROLE_LABEL)) redirect(`${PAGE}?error=details`);
+  if (!name || !Object.hasOwn(ROLE_LABEL, role)) redirect(`${PAGE}?error=details`);
   let disabled = form.get("disabled") === "on";
   // You cannot lock yourself out or remove your own admin rights.
   if (id === me.id) {

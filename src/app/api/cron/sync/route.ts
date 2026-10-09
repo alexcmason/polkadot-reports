@@ -15,5 +15,6 @@ function authorised(request: Request): boolean {
 /** Vercel Cron calls this every morning to refresh ServiceM8 and Xero. */
 export async function GET(request: Request) {
   if (!authorised(request)) return NextResponse.json({ error: "Not allowed." }, { status: 401 });
-  return NextResponse.json(await syncNow({ trigger: "cron", budgetMs: 270_000 }));
+  // Leaves room inside the 300 second limit for a slow last request to finish.
+  return NextResponse.json(await syncNow({ trigger: "cron", budgetMs: 240_000 }));
 }

@@ -808,8 +808,8 @@ function ratesSheet(book: Book, weeks: string[], ctx: ExcelContext) {
 }
 
 /**
- * The month workbook: the month master, the questions for the client, one sheet per week,
- * Job Data and the rates. `rows` are the month's Job Data rows.
+ * The month workbook: the month master, the questions for the business, one sheet per week,
+ * then Job Data and the rates for admins and editors. `rows` are the month's Job Data rows.
  */
 export async function monthWorkbook(month: MonthReport, weeks: WeekReport[], rows: JobRow[], queries: ReportQuery[], ctx: ExcelContext): Promise<Buffer> {
   const book = new Book(ctx);
@@ -818,17 +818,20 @@ export async function monthWorkbook(month: MonthReport, weeks: WeekReport[], row
   for (const w of weeks) {
     if (w.rows.length || w.heldOut.length) writeWeek(book, `WE ${ddMon(w.weekEnding)}`, w, ctx);
   }
-  jobDataSheet(
-    book,
-    rows,
-    ctx,
-    `${monthName(month.month)}. Every costed job, one row each. The month and week sheets are built from these rows. All values exclude VAT unless stated.`
-  );
-  ratesSheet(
-    book,
-    month.weeks.map((w) => w.weekEnding),
-    ctx
-  );
+  // Viewers cannot open Job data or Settings in the app, so their copy leaves both out.
+  if (isStaff(ctx)) {
+    jobDataSheet(
+      book,
+      rows,
+      ctx,
+      `${monthName(month.month)}. Every costed job, one row each. The month and week sheets are built from these rows. All values exclude VAT unless stated.`
+    );
+    ratesSheet(
+      book,
+      month.weeks.map((w) => w.weekEnding),
+      ctx
+    );
+  }
   return book.buffer();
 }
 
