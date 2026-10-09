@@ -1,0 +1,4 @@
+{
+  "regions": ["lhr1"],
+  "crons": [{ "path": "/api/cron/sync", "schedule": "15 5 * * *" }]
+}
